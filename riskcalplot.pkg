@@ -1,0 +1,10 @@
+v 3
+d riskcalplot. Plot observed and model-predicted risks across discrete clinical scores
+d
+d Authors: Suppachai Lawanaskol and Jayanton Patumanond
+d Chaiprakarn Hospital and Naresuan University, Thailand
+d Requires: Stata 16.0 or later
+d Distribution-Date: 02aug2026
+d
+f riskcalplot.ado
+f riskcalplot.sthlp

@@ -1,0 +1,3 @@
+v 3
+d riskcalplot: Risk calibration plots for discrete clinical scores
+p riskcalplot Plot observed and model-predicted risks across discrete clinical scores
