@@ -1,0 +1,129 @@
+*! riskcalplot dialog version 0.2.0 11sep2026
+*! Uses StataCorp graphics .idlg tabs
+
+VERSION 13
+
+/* Standard graphics dialog definitions supplied with Stata */
+INCLUDE graph_header
+INCLUDE header
+
+HELP hlp1, view("help riskcalplot")
+RESET res1
+
+
+/* Main command-specific tab */
+DIALOG main, title("riskcalplot - Risk calibration plot") tabtitle("Main")
+BEGIN
+
+    /* Required by Stata graphics include tabs */
+    INCLUDE _glist_def
+
+    TEXT tx_endpoint 10 10 250 ., ///
+        label("Endpoint variable (coded 0/1):")
+
+    VARNAME endpoint 10 +20 350 ., ///
+        label("Endpoint") ///
+        error("Endpoint variable")
+
+
+    TEXT tx_scores 10 +35 300 ., ///
+        label("Score variable(s), up to 5:")
+
+    VARLIST scores 10 +20 730 ., ///
+        label("Score variables") ///
+        error("Score variable(s)")
+
+
+    TEXT tx_model 10 +35 270 ., ///
+        label("Model(s): logit or log")
+
+    EDIT model 10 +20 260 ., ///
+        label("Model(s)") ///
+        error("Model(s)") ///
+        default(logit) ///
+        option(model)
+
+    TEXT tx_modelnote 285 @ 455 ., ///
+        label("Specify one model for all scores, or one model per score")
+
+
+    TEXT tx_marker 10 +40 250 ., ///
+        label("Marker symbol (optional):")
+
+    COMBOBOX marker 10 +20 180 ., ///
+        dropdown ///
+        contents(symbols) ///
+        default("") ///
+        label("Marker") ///
+        option(marker)
+
+    TEXT tx_markernote 205 @ 535 ., ///
+        label("Leave blank to use the default markers Oh Dh Th Sh X")
+
+
+    CHECKBOX noci 10 +45 300 ., ///
+        label("Suppress confidence intervals") ///
+        option(noci)
+
+    CHECKBOX nostat 320 @ 300 ., ///
+        label("Suppress performance statistics") ///
+        option(nostat)
+
+
+    TEXT tx_level 10 +35 160 ., ///
+        label("Confidence level:")
+
+    SPINNER level 175 @ 85 ., ///
+        label("Confidence level") ///
+        min(50) ///
+        max(99) ///
+        default(c(level)) ///
+        option(level)
+
+END
+
+
+/* Required by the Stata graphics tabs */
+INCLUDE _glist_sc
+
+/* Standard Stata graphics tabs */
+INCLUDE gyaxis
+INCLUDE gxaxis
+INCLUDE gtitle
+INCLUDE gcaption
+INCLUDE glegend
+INCLUDE gregion
+
+
+PROGRAM command
+BEGIN
+
+    require main.endpoint main.scores main.model
+
+    put "riskcalplot "
+    varlist main.endpoint main.scores
+
+    beginoptions
+
+        /* riskcalplot-specific options */
+        optionarg /asis main.model
+        optionarg /asis main.marker
+
+        option main.noci
+        option main.nostat
+
+        if ! main.level.isdefault() {
+            optionarg main.level
+        }
+
+        /* Standard Stata twoway graphics options */
+        put /program gyaxis_output
+        put /program gxaxis_output
+        put /program gtitle_output
+        put /program gcaption_output
+        put /program glegend_output
+        put /program gregion_output
+
+    endoptions
+
+END
