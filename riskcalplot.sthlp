@@ -422,6 +422,33 @@ Install the current version from GitHub:
 {phang2}
 {cmd:net install riskcalplot, from("https://raw.githubusercontent.com/suppachai-lawanaskol/riskcalplot/main/") replace}
 
+{title:Graphical user interface}
+
+{pstd}
+After installing the menu entry, riskcalplot can be opened from:
+
+{phang}
+{bf:User > Graphics > Risk calibration plot (riskcalplot)}
+
+{pstd}
+Alternatively, click:
+
+{phang}
+{stata "db riskcalplot":Open riskcalplot dialog}
+
+{title:Menu installation}
+
+{pstd}
+To add riskcalplot to the Stata menu:
+
+{phang}
+{stata "riskcalplot_menu, install":Install menu entry}
+
+{pstd}
+The command will add:
+
+{phang}
+{bf:User > Graphics > Risk calibration plot (riskcalplot)}
 
 {marker authors}{...}
 {title:Authors}

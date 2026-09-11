@@ -1,0 +1,772 @@
+*! riskcalplot dialog layout version 0.6.0 11sep2026
+*! Native-like standalone layout
+*! No dependency on Stata internal .idlg files
+*! This layout test wires Main and if/in only; graphics controls are for UI review first
+
+VERSION 13
+POSITION . . 820 570
+
+
+/* =========================
+   Lists
+   ========================= */
+
+LIST model_list
+BEGIN
+logit
+log
+END
+
+LIST legend_pos
+BEGIN
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+END
+
+LIST legend_cols
+BEGIN
+1
+2
+3
+4
+5
+6
+END
+
+LIST rings
+BEGIN
+0
+1
+2
+3
+4
+5
+END
+
+LIST clockpos
+BEGIN
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+END
+
+
+/* =========================
+   Main
+   ========================= */
+
+DIALOG main, title("riskcalplot - Risk calibration plot") tabtitle("Main")
+BEGIN
+
+    GROUPBOX gm_data 10 10 795 145, label("Variables")
+
+    TEXT tx_endpoint 25 35 230 ., label("Endpoint variable (coded 0/1):")
+    VARNAME endpoint 25 55 330 ., label("Endpoint") error("Endpoint variable")
+
+    TEXT tx_scores 400 35 250 ., label("Score variable(s), up to 5:")
+    VARLIST scores 400 55 385 ., label("Score variables") error("Score variable(s)")
+
+
+    GROUPBOX gm_model 10 175 795 145, label("Model and confidence interval")
+
+    TEXT tx_model 25 200 160 ., label("Model(s):")
+    EDIT model 25 220 300 ., label("Model(s)") error("Model(s)") ///
+        default(logit) option(model)
+
+    TEXT tx_modelnote 345 220 440 ., ///
+        label("One model for all scores, or one model per score: logit / log")
+
+    TEXT tx_level 25 265 160 ., label("Confidence level:")
+    SPINNER level 160 262 85 ., label("Confidence level") ///
+        min(50) max(99) default(c(level)) option(level)
+
+    CHECKBOX noci 300 262 210 ., ///
+        label("Suppress confidence intervals") option(noci)
+
+    CHECKBOX nostat 530 262 240 ., ///
+        label("Suppress performance statistics") option(nostat)
+
+
+    TEXT tx_mainnote 25 355 760 ., ///
+        label("Graph appearance is controlled in the remaining tabs")
+
+END
+
+
+/* =========================
+   if/in
+   ========================= */
+
+DIALOG ifin, tabtitle("if/in")
+BEGIN
+
+    GROUPBOX gi_if 10 10 795 150, label("if")
+
+    TEXT ti_if 25 40 160 ., label("Expression:")
+    EXP ifexp 25 62 760 ., ///
+        label("Create...") ///
+        error("if expression") ///
+        tooltip("Restrict the analysis to observations satisfying an expression")
+
+
+    GROUPBOX gi_in 10 185 795 150, label("in")
+
+    TEXT ti_first 25 220 140 ., label("First observation:")
+    EDIT infirst 160 217 150 ., ///
+        label("First observation") ///
+        numonly
+
+    TEXT ti_slash 335 220 20 ., label("/")
+
+    TEXT ti_last 380 220 140 ., label("Last observation:")
+    EDIT inlast 515 217 150 ., ///
+        label("Last observation") ///
+        numonly
+
+    TEXT ti_innote 25 270 760 ., ///
+        label("Leave both boxes blank to use all observations")
+
+END
+
+
+/* =========================
+   Fitted lines
+   ========================= */
+
+DIALOG fitted, tabtitle("Fitted lines")
+BEGIN
+
+    GROUPBOX gf_line 10 10 795 315, label("Fitted risk lines")
+
+    TEXT tf_head0 25 40 50 ., label("Score")
+    TEXT tf_head1 90 40 115 ., label("Color")
+    TEXT tf_head2 220 40 115 ., label("Pattern")
+    TEXT tf_head3 350 40 115 ., label("Width")
+    TEXT tf_head4 480 40 285 ., label("Other line options")
+
+    TEXT tf_s1 40 80 30 ., label("1")
+    COMBOBOX lc1 90 77 115 ., dropdown contents(colors) default("") label("Line 1 color")
+    COMBOBOX lp1 220 77 115 ., dropdown contents(linepatterns) default("") label("Line 1 pattern")
+    COMBOBOX lw1 350 77 115 ., dropdown contents(linewidths) default("") label("Line 1 width")
+    EDIT lx1 480 77 285 ., label("Other line 1 options")
+
+    TEXT tf_s2 40 125 30 ., label("2")
+    COMBOBOX lc2 90 122 115 ., dropdown contents(colors) default("") label("Line 2 color")
+    COMBOBOX lp2 220 122 115 ., dropdown contents(linepatterns) default("") label("Line 2 pattern")
+    COMBOBOX lw2 350 122 115 ., dropdown contents(linewidths) default("") label("Line 2 width")
+    EDIT lx2 480 122 285 ., label("Other line 2 options")
+
+    TEXT tf_s3 40 170 30 ., label("3")
+    COMBOBOX lc3 90 167 115 ., dropdown contents(colors) default("") label("Line 3 color")
+    COMBOBOX lp3 220 167 115 ., dropdown contents(linepatterns) default("") label("Line 3 pattern")
+    COMBOBOX lw3 350 167 115 ., dropdown contents(linewidths) default("") label("Line 3 width")
+    EDIT lx3 480 167 285 ., label("Other line 3 options")
+
+    TEXT tf_s4 40 215 30 ., label("4")
+    COMBOBOX lc4 90 212 115 ., dropdown contents(colors) default("") label("Line 4 color")
+    COMBOBOX lp4 220 212 115 ., dropdown contents(linepatterns) default("") label("Line 4 pattern")
+    COMBOBOX lw4 350 212 115 ., dropdown contents(linewidths) default("") label("Line 4 width")
+    EDIT lx4 480 212 285 ., label("Other line 4 options")
+
+    TEXT tf_s5 40 260 30 ., label("5")
+    COMBOBOX lc5 90 257 115 ., dropdown contents(colors) default("") label("Line 5 color")
+    COMBOBOX lp5 220 257 115 ., dropdown contents(linepatterns) default("") label("Line 5 pattern")
+    COMBOBOX lw5 350 257 115 ., dropdown contents(linewidths) default("") label("Line 5 width")
+    EDIT lx5 480 257 285 ., label("Other line 5 options")
+
+    TEXT tf_note 25 350 760 ., ///
+        label("Options correspond to standard line options such as lcolor(), lpattern(), and lwidth()")
+
+END
+
+
+/* =========================
+   Observed points
+   ========================= */
+
+DIALOG observed, tabtitle("Observed points")
+BEGIN
+
+    GROUPBOX go_global 10 10 795 90, label("Common marker")
+
+    TEXT to_common 25 40 180 ., label("Marker for all scores:")
+    COMBOBOX marker 200 37 160 ., dropdown contents(symbols) ///
+        default("") label("Common marker") option(marker)
+
+    TEXT to_commonnote 385 40 400 ., ///
+        label("Leave blank to use riskcalplot defaults; per-score settings below may override")
+
+
+    GROUPBOX go_mark 10 120 795 300, label("Observed risk markers")
+
+    TEXT to_head0 25 150 50 ., label("Score")
+    TEXT to_head1 85 150 100 ., label("Symbol")
+    TEXT to_head2 195 150 100 ., label("Size")
+    TEXT to_head3 305 150 100 ., label("Fill")
+    TEXT to_head4 415 150 100 ., label("Outline")
+    TEXT to_head5 525 150 100 ., label("Outline width")
+    TEXT to_head6 635 150 150 ., label("Other marker options")
+
+    TEXT to_s1 40 190 30 ., label("1")
+    COMBOBOX ms1 85 187 100 ., dropdown contents(symbols) default("") label("Marker 1 symbol")
+    COMBOBOX mz1 195 187 100 ., dropdown contents(symbolsizes) default("") label("Marker 1 size")
+    COMBOBOX mf1 305 187 100 ., dropdown contents(colors) default("") label("Marker 1 fill")
+    COMBOBOX ml1 415 187 100 ., dropdown contents(colors) default("") label("Marker 1 outline")
+    COMBOBOX mw1 525 187 100 ., dropdown contents(linewidths) default("") label("Marker 1 outline width")
+    EDIT mx1 635 187 150 ., label("Other marker 1 options")
+
+    TEXT to_s2 40 230 30 ., label("2")
+    COMBOBOX ms2 85 227 100 ., dropdown contents(symbols) default("") label("Marker 2 symbol")
+    COMBOBOX mz2 195 227 100 ., dropdown contents(symbolsizes) default("") label("Marker 2 size")
+    COMBOBOX mf2 305 227 100 ., dropdown contents(colors) default("") label("Marker 2 fill")
+    COMBOBOX ml2 415 227 100 ., dropdown contents(colors) default("") label("Marker 2 outline")
+    COMBOBOX mw2 525 227 100 ., dropdown contents(linewidths) default("") label("Marker 2 outline width")
+    EDIT mx2 635 227 150 ., label("Other marker 2 options")
+
+    TEXT to_s3 40 270 30 ., label("3")
+    COMBOBOX ms3 85 267 100 ., dropdown contents(symbols) default("") label("Marker 3 symbol")
+    COMBOBOX mz3 195 267 100 ., dropdown contents(symbolsizes) default("") label("Marker 3 size")
+    COMBOBOX mf3 305 267 100 ., dropdown contents(colors) default("") label("Marker 3 fill")
+    COMBOBOX ml3 415 267 100 ., dropdown contents(colors) default("") label("Marker 3 outline")
+    COMBOBOX mw3 525 267 100 ., dropdown contents(linewidths) default("") label("Marker 3 outline width")
+    EDIT mx3 635 267 150 ., label("Other marker 3 options")
+
+    TEXT to_s4 40 310 30 ., label("4")
+    COMBOBOX ms4 85 307 100 ., dropdown contents(symbols) default("") label("Marker 4 symbol")
+    COMBOBOX mz4 195 307 100 ., dropdown contents(symbolsizes) default("") label("Marker 4 size")
+    COMBOBOX mf4 305 307 100 ., dropdown contents(colors) default("") label("Marker 4 fill")
+    COMBOBOX ml4 415 307 100 ., dropdown contents(colors) default("") label("Marker 4 outline")
+    COMBOBOX mw4 525 307 100 ., dropdown contents(linewidths) default("") label("Marker 4 outline width")
+    EDIT mx4 635 307 150 ., label("Other marker 4 options")
+
+    TEXT to_s5 40 350 30 ., label("5")
+    COMBOBOX ms5 85 347 100 ., dropdown contents(symbols) default("") label("Marker 5 symbol")
+    COMBOBOX mz5 195 347 100 ., dropdown contents(symbolsizes) default("") label("Marker 5 size")
+    COMBOBOX mf5 305 347 100 ., dropdown contents(colors) default("") label("Marker 5 fill")
+    COMBOBOX ml5 415 347 100 ., dropdown contents(colors) default("") label("Marker 5 outline")
+    COMBOBOX mw5 525 347 100 ., dropdown contents(linewidths) default("") label("Marker 5 outline width")
+    EDIT mx5 635 347 150 ., label("Other marker 5 options")
+
+END
+
+
+/* =========================
+   CI lines
+   ========================= */
+
+DIALOG ci, tabtitle("CI lines")
+BEGIN
+
+    GROUPBOX gc_line 10 10 795 315, label("Confidence interval lines")
+
+    TEXT tc_head0 25 40 50 ., label("Score")
+    TEXT tc_head1 90 40 115 ., label("Color")
+    TEXT tc_head2 220 40 115 ., label("Pattern")
+    TEXT tc_head3 350 40 115 ., label("Width")
+    TEXT tc_head4 480 40 285 ., label("Other CI options")
+
+    TEXT tc_s1 40 80 30 ., label("1")
+    COMBOBOX cc1 90 77 115 ., dropdown contents(colors) default("") label("CI 1 color")
+    COMBOBOX cp1 220 77 115 ., dropdown contents(linepatterns) default("") label("CI 1 pattern")
+    COMBOBOX cw1 350 77 115 ., dropdown contents(linewidths) default("") label("CI 1 width")
+    EDIT cx1 480 77 285 ., label("Other CI 1 options")
+
+    TEXT tc_s2 40 125 30 ., label("2")
+    COMBOBOX cc2 90 122 115 ., dropdown contents(colors) default("") label("CI 2 color")
+    COMBOBOX cp2 220 122 115 ., dropdown contents(linepatterns) default("") label("CI 2 pattern")
+    COMBOBOX cw2 350 122 115 ., dropdown contents(linewidths) default("") label("CI 2 width")
+    EDIT cx2 480 122 285 ., label("Other CI 2 options")
+
+    TEXT tc_s3 40 170 30 ., label("3")
+    COMBOBOX cc3 90 167 115 ., dropdown contents(colors) default("") label("CI 3 color")
+    COMBOBOX cp3 220 167 115 ., dropdown contents(linepatterns) default("") label("CI 3 pattern")
+    COMBOBOX cw3 350 167 115 ., dropdown contents(linewidths) default("") label("CI 3 width")
+    EDIT cx3 480 167 285 ., label("Other CI 3 options")
+
+    TEXT tc_s4 40 215 30 ., label("4")
+    COMBOBOX cc4 90 212 115 ., dropdown contents(colors) default("") label("CI 4 color")
+    COMBOBOX cp4 220 212 115 ., dropdown contents(linepatterns) default("") label("CI 4 pattern")
+    COMBOBOX cw4 350 212 115 ., dropdown contents(linewidths) default("") label("CI 4 width")
+    EDIT cx4 480 212 285 ., label("Other CI 4 options")
+
+    TEXT tc_s5 40 260 30 ., label("5")
+    COMBOBOX cc5 90 257 115 ., dropdown contents(colors) default("") label("CI 5 color")
+    COMBOBOX cp5 220 257 115 ., dropdown contents(linepatterns) default("") label("CI 5 pattern")
+    COMBOBOX cw5 350 257 115 ., dropdown contents(linewidths) default("") label("CI 5 width")
+    EDIT cx5 480 257 285 ., label("Other CI 5 options")
+
+    TEXT tc_note 25 350 760 ., ///
+        label("These correspond to the rcap line appearance options used by riskcalplot")
+
+END
+
+
+/* =========================
+   Y axis
+   ========================= */
+
+DIALOG yaxis, tabtitle("Y axis")
+BEGIN
+
+    GROUPBOX gy_title 10 10 385 155, label("Axis title")
+
+    TEXT ty_title 25 35 120 ., label("Title:")
+    EDIT ytitle 25 55 350 ., label("Y-axis title")
+
+    TEXT ty_tsize 25 90 90 ., label("Size:")
+    COMBOBOX ytitlesize 115 87 115 ., dropdown contents(textsizes) default("") label("Y title size")
+
+    TEXT ty_tcolor 245 90 90 ., label("Color:")
+    COMBOBOX ytitlecolor 305 87 70 ., dropdown contents(colors) default("") label("Y title color")
+
+    TEXT ty_tangle 25 125 90 ., label("Angle:")
+    EDIT ytitleangle 115 122 80 ., label("Y title angle") numonly
+
+    TEXT ty_tmargin 215 125 90 ., label("Margin:")
+    EDIT ytitlemargin 305 122 70 ., label("Y title margin")
+
+
+    GROUPBOX gy_labels 410 10 395 260, label("Labels and ticks")
+
+    TEXT ty_rule 425 35 165 ., label("Label rule / values:")
+    EDIT ylabel 425 55 360 ., label("Y labels")
+
+    TEXT ty_lsize 425 90 90 ., label("Size:")
+    COMBOBOX ylabelsize 515 87 110 ., dropdown contents(textsizes) default("") label("Y label size")
+
+    TEXT ty_lcolor 640 90 90 ., label("Color:")
+    COMBOBOX ylabelcolor 700 87 85 ., dropdown contents(colors) default("") label("Y label color")
+
+    TEXT ty_langle 425 125 90 ., label("Angle:")
+    EDIT ylabelangle 515 122 80 ., label("Y label angle") numonly
+
+    TEXT ty_format 615 125 90 ., label("Format:")
+    EDIT ylabelformat 700 122 85 ., label("Y label format")
+
+    CHECKBOX ygrid 425 160 120 ., label("Grid") option(grid)
+    CHECKBOX ynogrid 555 160 130 ., label("No grid") option(nogrid)
+
+    TEXT ty_tick 425 195 150 ., label("Major ticks:")
+    EDIT ytick 545 192 240 ., label("Y ticks")
+
+    TEXT ty_mtick 425 230 150 ., label("Minor ticks:")
+    EDIT ymtick 545 227 240 ., label("Y minor ticks")
+
+
+    GROUPBOX gy_scale 10 180 385 230, label("Scale")
+
+    TEXT ty_range 25 205 110 ., label("Range:")
+    EDIT yrange 115 202 250 ., label("Y scale range")
+
+    CHECKBOX ylog 25 240 100 ., label("Log") option(log)
+    CHECKBOX yreverse 135 240 120 ., label("Reverse") option(reverse)
+    CHECKBOX yalt 265 240 100 ., label("Alternate") option(alt)
+
+    CHECKBOX yoff 25 275 100 ., label("Off") option(off)
+    CHECKBOX ynoline 135 275 140 ., label("No axis line") option(noline)
+
+    TEXT ty_scaleextra 25 325 160 ., label("Other scale options:")
+    EDIT yscaleextra 165 322 200 ., label("Other Y scale options")
+
+
+    GROUPBOX gy_ref 410 285 395 125, label("Reference line")
+
+    TEXT ty_refval 425 310 110 ., label("Value(s):")
+    EDIT yline 515 307 270 ., label("Y reference line")
+
+    TEXT ty_refcolor 425 345 80 ., label("Color:")
+    COMBOBOX ylinecolor 485 342 90 ., dropdown contents(colors) default("") label("Y line color")
+
+    TEXT ty_refwidth 585 345 80 ., label("Width:")
+    COMBOBOX ylinewidth 640 342 70 ., dropdown contents(linewidths) default("") label("Y line width")
+
+    TEXT ty_refpat 720 345 65 ., label("Pattern:")
+    COMBOBOX ylinepattern 720 367 65 ., dropdown contents(linepatterns) default("") label("Y line pattern")
+
+END
+
+
+/* =========================
+   X axis
+   ========================= */
+
+DIALOG xaxis, tabtitle("X axis")
+BEGIN
+
+    GROUPBOX gx_title 10 10 385 155, label("Axis title")
+
+    TEXT tx_title2 25 35 120 ., label("Title:")
+    EDIT xtitle 25 55 350 ., label("X-axis title")
+
+    TEXT tx_tsize 25 90 90 ., label("Size:")
+    COMBOBOX xtitlesize 115 87 115 ., dropdown contents(textsizes) default("") label("X title size")
+
+    TEXT tx_tcolor 245 90 90 ., label("Color:")
+    COMBOBOX xtitlecolor 305 87 70 ., dropdown contents(colors) default("") label("X title color")
+
+    TEXT tx_tangle 25 125 90 ., label("Angle:")
+    EDIT xtitleangle 115 122 80 ., label("X title angle") numonly
+
+    TEXT tx_tmargin 215 125 90 ., label("Margin:")
+    EDIT xtitlemargin 305 122 70 ., label("X title margin")
+
+
+    GROUPBOX gx_labels 410 10 395 260, label("Labels and ticks")
+
+    TEXT tx_rule 425 35 165 ., label("Label rule / values:")
+    EDIT xlabel 425 55 360 ., label("X labels")
+
+    TEXT tx_lsize 425 90 90 ., label("Size:")
+    COMBOBOX xlabelsize 515 87 110 ., dropdown contents(textsizes) default("") label("X label size")
+
+    TEXT tx_lcolor 640 90 90 ., label("Color:")
+    COMBOBOX xlabelcolor 700 87 85 ., dropdown contents(colors) default("") label("X label color")
+
+    TEXT tx_langle 425 125 90 ., label("Angle:")
+    EDIT xlabelangle 515 122 80 ., label("X label angle") numonly
+
+    TEXT tx_format 615 125 90 ., label("Format:")
+    EDIT xlabelformat 700 122 85 ., label("X label format")
+
+    CHECKBOX xgrid 425 160 120 ., label("Grid") option(grid)
+    CHECKBOX xnogrid 555 160 130 ., label("No grid") option(nogrid)
+
+    TEXT tx_tick 425 195 150 ., label("Major ticks:")
+    EDIT xtick 545 192 240 ., label("X ticks")
+
+    TEXT tx_mtick 425 230 150 ., label("Minor ticks:")
+    EDIT xmtick 545 227 240 ., label("X minor ticks")
+
+
+    GROUPBOX gx_scale 10 180 385 230, label("Scale")
+
+    TEXT tx_range 25 205 110 ., label("Range:")
+    EDIT xrange 115 202 250 ., label("X scale range")
+
+    CHECKBOX xlog 25 240 100 ., label("Log") option(log)
+    CHECKBOX xreverse 135 240 120 ., label("Reverse") option(reverse)
+    CHECKBOX xalt 265 240 100 ., label("Alternate") option(alt)
+
+    CHECKBOX xoff 25 275 100 ., label("Off") option(off)
+    CHECKBOX xnoline 135 275 140 ., label("No axis line") option(noline)
+
+    TEXT tx_scaleextra 25 325 160 ., label("Other scale options:")
+    EDIT xscaleextra 165 322 200 ., label("Other X scale options")
+
+
+    GROUPBOX gx_ref 410 285 395 125, label("Reference line")
+
+    TEXT tx_refval 425 310 110 ., label("Value(s):")
+    EDIT xline 515 307 270 ., label("X reference line")
+
+    TEXT tx_refcolor 425 345 80 ., label("Color:")
+    COMBOBOX xlinecolor 485 342 90 ., dropdown contents(colors) default("") label("X line color")
+
+    TEXT tx_refwidth 585 345 80 ., label("Width:")
+    COMBOBOX xlinewidth 640 342 70 ., dropdown contents(linewidths) default("") label("X line width")
+
+    TEXT tx_refpat 720 345 65 ., label("Pattern:")
+    COMBOBOX xlinepattern 720 367 65 ., dropdown contents(linepatterns) default("") label("X line pattern")
+
+END
+
+
+/* =========================
+   Titles
+   ========================= */
+
+DIALOG titles, tabtitle("Titles")
+BEGIN
+
+    GROUPBOX gt_title 10 10 795 105, label("Title")
+
+    TEXT tt_text 25 35 80 ., label("Text:")
+    EDIT title 85 32 700 ., label("Title")
+
+    TEXT tt_size 25 70 70 ., label("Size:")
+    COMBOBOX titlesize 85 67 110 ., dropdown contents(textsizes) default("") label("Title size")
+
+    TEXT tt_color 215 70 70 ., label("Color:")
+    COMBOBOX titlecolor 275 67 100 ., dropdown contents(colors) default("") label("Title color")
+
+    TEXT tt_pos 395 70 80 ., label("Position:")
+    COMBOBOX titlepos 465 67 90 ., dropdown contents(clockpos) default("") label("Title position")
+
+    TEXT tt_ring 575 70 60 ., label("Ring:")
+    COMBOBOX titlering 625 67 70 ., dropdown contents(rings) default("") label("Title ring")
+
+    CHECKBOX titlespan 710 70 75 ., label("Span") option(span)
+
+
+    GROUPBOX gt_sub 10 130 795 90, label("Subtitle")
+
+    TEXT ts_text 25 155 80 ., label("Text:")
+    EDIT subtitle 85 152 700 ., label("Subtitle")
+
+    TEXT ts_size 25 190 70 ., label("Size:")
+    COMBOBOX subtitlesize 85 187 110 ., dropdown contents(textsizes) default("") label("Subtitle size")
+
+    TEXT ts_color 215 190 70 ., label("Color:")
+    COMBOBOX subtitlecolor 275 187 100 ., dropdown contents(colors) default("") label("Subtitle color")
+
+
+    GROUPBOX gt_cap 10 235 795 90, label("Caption")
+
+    TEXT tc_text 25 260 80 ., label("Text:")
+    EDIT caption 85 257 700 ., label("Caption")
+
+    TEXT tc_size 25 295 70 ., label("Size:")
+    COMBOBOX captionsize 85 292 110 ., dropdown contents(textsizes) default("") label("Caption size")
+
+    TEXT tc_color 215 295 70 ., label("Color:")
+    COMBOBOX captioncolor 275 292 100 ., dropdown contents(colors) default("") label("Caption color")
+
+
+    GROUPBOX gt_note 10 340 795 105, label("Note")
+
+    TEXT tn_text 25 365 80 ., label("Text:")
+    EDIT note 85 362 700 ., label("Note")
+
+    TEXT tn_size 25 400 70 ., label("Size:")
+    COMBOBOX notesize 85 397 110 ., dropdown contents(textsizes) default("") label("Note size")
+
+    TEXT tn_color 215 400 70 ., label("Color:")
+    COMBOBOX notecolor 275 397 100 ., dropdown contents(colors) default("") label("Note color")
+
+    TEXT tn_warn 405 400 380 ., ///
+        label("riskcalplot already uses note() for performance statistics")
+
+END
+
+
+/* =========================
+   Legend
+   ========================= */
+
+DIALOG legend, tabtitle("Legend")
+BEGIN
+
+    GROUPBOX gl_main 10 10 795 130, label("Legend layout")
+
+    CHECKBOX nolegend 25 35 180 ., label("Suppress legend") option(off)
+
+    TEXT tl_cols 225 35 80 ., label("Columns:")
+    COMBOBOX cols 295 32 80 ., dropdownlist contents(legend_cols) default(1) label("Legend columns")
+
+    TEXT tl_rows 395 35 70 ., label("Rows:")
+    EDIT rows 455 32 70 ., label("Legend rows") numonly
+
+    TEXT tl_pos 545 35 70 ., label("Position:")
+    COMBOBOX pos 610 32 80 ., dropdownlist contents(legend_pos) default(11) label("Legend position")
+
+    TEXT tl_ring 705 35 50 ., label("Ring:")
+    COMBOBOX ring 750 32 45 ., dropdownlist contents(rings) default(0) label("Legend ring")
+
+    TEXT tl_size 25 75 80 ., label("Text size:")
+    COMBOBOX size 95 72 100 ., dropdown contents(textsizes) default("") label("Legend size")
+
+    CHECKBOX forcesize 225 75 160 ., label("Force key size") option(forcesize)
+
+    TEXT tl_order 405 75 80 ., label("Order:")
+    EDIT order 465 72 320 ., label("Legend order")
+
+
+    GROUPBOX gl_region 10 160 795 130, label("Legend region")
+
+    TEXT tl_fcolor 25 185 80 ., label("Fill:")
+    COMBOBOX fcolor 85 182 110 ., dropdown contents(colors) default("") label("Legend fill color")
+
+    TEXT tl_lcolor 215 185 80 ., label("Line:")
+    COMBOBOX lcolor 275 182 100 ., dropdown contents(colors) default("") label("Legend line color")
+
+    TEXT tl_lwidth 395 185 80 ., label("Width:")
+    COMBOBOX lwidth 455 182 90 ., dropdown contents(linewidths) default("") label("Legend line width")
+
+    TEXT tl_margin 565 185 80 ., label("Margin:")
+    EDIT margin 625 182 160 ., label("Legend margin")
+
+    TEXT tl_keyx 25 225 90 ., label("Key x size:")
+    EDIT keyxsize 95 222 100 ., label("Legend key x size")
+
+    TEXT tl_keyy 215 225 90 ., label("Key y size:")
+    EDIT keyysize 285 222 100 ., label("Legend key y size")
+
+    TEXT tl_symx 405 225 110 ., label("Symbol x size:")
+    EDIT symxsize 495 222 100 ., label("Legend symbol x size")
+
+    TEXT tl_colgap 615 225 90 ., label("Col gap:")
+    EDIT colgap 685 222 100 ., label("Legend column gap")
+
+
+    GROUPBOX gl_adv 10 310 795 105, label("Advanced")
+
+    TEXT tl_extra 25 340 150 ., label("Other legend options:")
+    EDIT extra 165 337 620 ., label("Other legend options")
+
+    TEXT tl_note 25 380 760 ., ///
+        label("order() is advanced because riskcalplot creates plot indices dynamically")
+
+END
+
+
+/* =========================
+   Overall
+   ========================= */
+
+DIALOG overall, tabtitle("Overall")
+BEGIN
+
+    GROUPBOX gor_graph 10 10 390 180, label("Graph region")
+
+    TEXT og_fcolor 25 40 90 ., label("Fill:")
+    COMBOBOX graphfcolor 90 37 115 ., dropdown contents(colors) default("") label("Graph fill")
+
+    TEXT og_lcolor 220 40 90 ., label("Outline:")
+    COMBOBOX graphlcolor 285 37 95 ., dropdown contents(colors) default("") label("Graph outline")
+
+    TEXT og_lwidth 25 80 90 ., label("Width:")
+    COMBOBOX graphlwidth 90 77 115 ., dropdown contents(linewidths) default("") label("Graph outline width")
+
+    TEXT og_lpat 220 80 90 ., label("Pattern:")
+    COMBOBOX graphlpattern 285 77 95 ., dropdown contents(linepatterns) default("") label("Graph outline pattern")
+
+    TEXT og_margin 25 120 90 ., label("Margin:")
+    EDIT graphmargin 90 117 290 ., label("Graph region margin")
+
+    TEXT og_gextra 25 155 120 ., label("Other options:")
+    EDIT graphextra 125 152 255 ., label("Other graph region options")
+
+
+    GROUPBOX gor_plot 415 10 390 180, label("Plot region")
+
+    TEXT op_fcolor 430 40 90 ., label("Fill:")
+    COMBOBOX plotfcolor 495 37 115 ., dropdown contents(colors) default("") label("Plot fill")
+
+    TEXT op_lcolor 625 40 90 ., label("Outline:")
+    COMBOBOX plotlcolor 690 37 95 ., dropdown contents(colors) default("") label("Plot outline")
+
+    TEXT op_lwidth 430 80 90 ., label("Width:")
+    COMBOBOX plotlwidth 495 77 115 ., dropdown contents(linewidths) default("") label("Plot outline width")
+
+    TEXT op_lpat 625 80 90 ., label("Pattern:")
+    COMBOBOX plotlpattern 690 77 95 ., dropdown contents(linepatterns) default("") label("Plot outline pattern")
+
+    TEXT op_margin 430 120 90 ., label("Margin:")
+    EDIT plotmargin 495 117 290 ., label("Plot region margin")
+
+    TEXT op_pextra 430 155 120 ., label("Other options:")
+    EDIT plotextra 530 152 255 ., label("Other plot region options")
+
+
+    GROUPBOX gor_size 10 210 795 115, label("Graph size and style")
+
+    TEXT os_scheme 25 240 70 ., label("Scheme:")
+    EDIT scheme 85 237 170 ., label("Scheme")
+
+    TEXT os_xsize 280 240 60 ., label("xsize:")
+    EDIT xsize 325 237 70 ., label("xsize") numonly
+
+    TEXT os_ysize 420 240 60 ., label("ysize:")
+    EDIT ysize 465 237 70 ., label("ysize") numonly
+
+    TEXT os_aspect 560 240 80 ., label("Aspect:")
+    EDIT aspect 620 237 70 ., label("Aspect ratio") numonly
+
+    CHECKBOX nodraw 710 237 80 ., label("No draw") option(nodraw)
+
+
+    GROUPBOX gor_output 10 345 795 125, label("Graph management")
+
+    TEXT oo_name 25 375 60 ., label("Name:")
+    EDIT name 80 372 210 ., label("Graph name")
+
+    CHECKBOX namereplace 305 375 110 ., label("Replace") option(replace)
+
+    TEXT oo_save 430 375 60 ., label("Saving:")
+    EDIT saving 485 372 210 ., label("Saving filename")
+
+    CHECKBOX savereplace 710 375 90 ., label("Replace") option(replace)
+
+    TEXT oo_play 25 415 60 ., label("Play:")
+    EDIT play 80 412 210 ., label("Graph editor recording")
+
+    TEXT oo_extra 430 415 100 ., label("Other options:")
+    EDIT extra 515 412 270 ., label("Additional twoway options")
+
+END
+
+
+/* =========================
+   Buttons
+   ========================= */
+
+OK ok1, label("OK")
+SUBMIT sub1, label("Draw")
+COPY copy1, label("Copy command")
+CANCEL can1, label("Cancel")
+HELP hlp1, view("help riskcalplot")
+RESET res1
+
+
+/* =========================
+   Layout-test command
+   Main and if/in are functional.
+   Graphics controls will be wired after layout approval.
+   ========================= */
+
+PROGRAM command
+BEGIN
+
+    require main.endpoint main.scores main.model
+
+    if ifin.inlast & !ifin.infirst {
+        require ifin.infirst
+    }
+
+    put "riskcalplot "
+    varlist main.endpoint main.scores
+
+    ifexp ifin.ifexp
+
+    if ifin.infirst {
+        put " in " ifin.infirst
+        if ifin.inlast {
+            put "/" ifin.inlast
+        }
+        put " "
+    }
+
+    beginoptions
+
+        optionarg /asis main.model
+        optionarg /asis observed.marker
+
+        option main.noci
+        option main.nostat
+
+        if ! main.level.isdefault() {
+            optionarg main.level
+        }
+
+    endoptions
+
+END
